@@ -19,7 +19,6 @@ export const createEvent = async ({
 
     const newEvent = await Event.create({
       ...event,
-      category: event.categoryId,
       organizer: userId,
     });
 
