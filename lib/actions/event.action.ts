@@ -2,26 +2,22 @@
 
 import { revalidatePath } from "next/cache";
 
-
-// import Event from "@/lib/database/models/event.model";
-// import Category from "@/lib/database/models/category.model";
-
 import {
   CreateEventParams,
-//   UpdateEventParams,
-//   DeleteEventParams,
-//   GetAllEventsParams,
-//   GetEventsByUserParams,
-//   GetRelatedEventsByCategoryParams,
+  UpdateEventParams,
+  DeleteEventParams,
+  GetAllEventsParams,
+  GetEventsByUserParams,
+  GetRelatedEventsByCategoryParams,
 } from "@/types";
+import Category from "@/database/category.model";
 import { connectToDatabase } from "../mongoose";
 import User from "@/database/user.model";
-import Category from "@/database/category.model";
 import Event from "@/database/event.model";
 
-// const getCategoryByName = async (name: string) => {
-//   return Category.findOne({ name: { $regex: name, $options: "i" } });
-// };
+const getCategoryByName = async (name: string) => {
+  return Category.findOne({ name: { $regex: name, $options: "i" } });
+};
 
 const populateEvent = (query: any) => {
   return query
