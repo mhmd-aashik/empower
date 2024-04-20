@@ -28,7 +28,10 @@ export type CreateEventParams = {
     categoryId: string;
     price: string;
     isFree: boolean;
-    url: string;
+    age: string;
+    language: string;
+    exprience: string;
+    skills: string;
   };
   path: string;
 };

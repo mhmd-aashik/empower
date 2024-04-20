@@ -6,7 +6,6 @@ import { CreateUserParams, UpdateUserParams } from "@/types";
 import { connectToDatabase } from "../mongoose";
 import Order from "@/database/order.model";
 import User from "@/database/user.model";
-import error from "next/error";
 import Event from "@/database/event.model";
 
 export async function createUser(user: CreateUserParams) {
