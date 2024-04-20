@@ -117,7 +117,7 @@ export const eventDefaultValues = {
   imageUrl: "",
   startDateTime: new Date(),
   endDateTime: new Date(),
-  categoryId: "",
+  category: "",
   price: "",
   isFree: false,
   age: "",

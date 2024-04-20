@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,9 +20,9 @@ import { Textarea } from "../ui/textarea";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-// import { Checkbox } from "../ui/checkbox";
 import { useRouter } from "next/navigation";
-// import { createEvent } from "@/lib/actions/events.action";
+import { useRef } from "react";
+import { Editor } from "@tinymce/tinymce-react";
 
 import CategoryMenu from "./CategoryMenu";
 import {
@@ -31,15 +30,13 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { useUploadThing } from "@/lib/uploadthing";
 import { FileUploader } from "./FileUploader";
-import { Checkbox } from "../ui/checkbox";
 import { createEvent } from "@/lib/actions/event.action";
-import Dropdown from "./Dropdown";
+import { type } from "os";
 
 interface Props {
   userId: string;
@@ -48,6 +45,7 @@ interface Props {
 
 const EventForm = ({ type, userId }: Props) => {
   const [files, setFiles] = useState<File[]>([]);
+  const editorRef: any = useRef(null);
 
   const initialValues = eventDefaultValues;
 
@@ -72,7 +70,11 @@ const EventForm = ({ type, userId }: Props) => {
     if (type === "Create") {
       try {
         const newEvent = await createEvent({
-          event: { ...values, imageUrl: uploadedImageUrl },
+          event: {
+            ...values,
+            description: editorRef.current?.getContent(),
+            imageUrl: uploadedImageUrl,
+          },
           userId,
           path: "/profile",
         });
@@ -110,7 +112,7 @@ const EventForm = ({ type, userId }: Props) => {
           />
           <FormField
             control={form.control}
-            name="categoryId"
+            name="category"
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
@@ -125,17 +127,52 @@ const EventForm = ({ type, userId }: Props) => {
           />
         </div>
 
-        <div className="flex flex-col gap-5 md:flex-row">
+        <div className="flex flex-col gap-5 md:flex-row h-2422">
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormControl className="h-72">
-                  <Textarea
-                    placeholder="Description"
-                    {...field}
-                    className="textarea rounded-2xl"
+                <FormControl className="">
+                  <Editor
+                    apiKey="rc80d7x7p7t7u8o9nbb0343rz3vct7b95tky3ym48feida5s"
+                    onInit={(_evt, editor) => {
+                      editorRef.current = editor;
+                    }}
+                    onBlur={field.onBlur}
+                    onEditorChange={(content) => field.onChange(content)}
+                    initialValue=""
+                    init={{
+                      height: 280,
+                      menubar: false,
+                      plugins: [
+                        "advlist",
+                        "autolink",
+                        "lists",
+                        "link",
+                        "image",
+                        "charmap",
+                        "preview",
+                        "anchor",
+                        "searchreplace",
+                        "visualblocks",
+                        "code",
+                        "fullscreen",
+                        "insertdatetime",
+                        "media",
+                        "table",
+                        "code",
+                        "help",
+                        "wordcount",
+                      ],
+                      toolbar:
+                        "undo redo | blocks | " +
+                        "bold italic forecolor | alignleft aligncenter " +
+                        "alignright alignjustify | bullist numlist outdent indent | " +
+                        "removeformat | help",
+                      content_style:
+                        "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -291,19 +328,27 @@ const EventForm = ({ type, userId }: Props) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[55px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/age.svg"
-                      alt="calender"
-                      width={24}
-                      height={24}
-                    />
-                    <Input
-                      placeholder="Age Range (e.g. 18-25)"
-                      {...field}
-                      className="input-field"
-                    />
-                  </div>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger className="select-field">
+                      <SelectValue placeholder="Age Limit " />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="10 Years - 15 Years">
+                          10 Years - 15 Years
+                        </SelectItem>
+                        <SelectItem value="16 Years - 18 Years">
+                          16 Years - 18 Years
+                        </SelectItem>
+                        <SelectItem value="24 Years above">
+                          24 Years above
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -316,19 +361,24 @@ const EventForm = ({ type, userId }: Props) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[55px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/language.svg"
-                      alt="calender"
-                      width={24}
-                      height={24}
-                    />
-                    <Input
-                      placeholder="Language (e.g. English , Sinhala)"
-                      {...field}
-                      className="input-field"
-                    />
-                  </div>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger className="select-field">
+                      <SelectValue placeholder="Language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="English">English</SelectItem>
+                        <SelectItem value="Sinhala">Sinhala</SelectItem>
+                        <SelectItem value="Tamil">Tamil</SelectItem>
+                        <SelectItem value="other Language ">
+                          other Language
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -343,19 +393,217 @@ const EventForm = ({ type, userId }: Props) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[55px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/skill.svg"
-                      alt="calender"
-                      width={24}
-                      height={24}
-                    />
-                    <Input
-                      placeholder="Skills (e.g. Teaching , Nursing)"
-                      {...field}
-                      className="input-field"
-                    />
-                  </div>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger className="select-field">
+                      <SelectValue placeholder="Skills" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="Teamwork">Teamwork</SelectItem>
+                        <SelectItem value="Problem-Solving">
+                          Problem-Solving
+                        </SelectItem>
+                        <SelectItem value="Communication Skills">
+                          Communication Skills
+                        </SelectItem>
+                        <SelectItem value="Flexibility">Flexibility</SelectItem>
+                        <SelectItem value="Time Management">
+                          Time Management
+                        </SelectItem>
+                        <SelectItem value="Customer Service">
+                          Customer Service
+                        </SelectItem>
+                        <SelectItem value="Attention to Detail">
+                          Attention to Detail
+                        </SelectItem>
+                        <SelectItem value="Physical Stamina">
+                          Physical Stamina
+                        </SelectItem>
+                        <SelectItem value="Leadership Skills">
+                          Leadership Skills
+                        </SelectItem>
+                        <SelectItem value="Cultural Sensitivity">
+                          Cultural Sensitivity
+                        </SelectItem>
+                        <SelectItem value="Event Planning">
+                          Event Planning
+                        </SelectItem>
+                        <SelectItem value="Organizational Skills">
+                          Organizational Skills
+                        </SelectItem>
+                        <SelectItem value="Adaptability">
+                          Adaptability
+                        </SelectItem>
+                        <SelectItem value="Empathy">Empathy</SelectItem>
+                        <SelectItem value="Negotiation Skills">
+                          Negotiation Skills
+                        </SelectItem>
+                        <SelectItem value="Conflict Resolution">
+                          Conflict Resolution
+                        </SelectItem>
+                        <SelectItem value="Decision Making">
+                          Decision Making
+                        </SelectItem>
+                        <SelectItem value="Creativity">Creativity</SelectItem>
+                        <SelectItem value="Resourcefulness">
+                          Resourcefulness
+                        </SelectItem>
+                        <SelectItem value="Networking">Networking</SelectItem>
+                        <SelectItem value="Emotional Intelligence">
+                          Emotional Intelligence
+                        </SelectItem>
+                        <SelectItem value="Public Speaking">
+                          Public Speaking
+                        </SelectItem>
+                        <SelectItem value="Team Building">
+                          Team Building
+                        </SelectItem>
+                        <SelectItem value="Volunteer Management">
+                          Volunteer Management
+                        </SelectItem>
+                        <SelectItem value="Risk Management">
+                          Risk Management
+                        </SelectItem>
+                        <SelectItem value="Budget Management">
+                          Budget Management
+                        </SelectItem>
+                        <SelectItem value="Project Management">
+                          Project Management
+                        </SelectItem>
+                        <SelectItem value="Event Promotion">
+                          Event Promotion
+                        </SelectItem>
+                        <SelectItem value="Conflict Management">
+                          Conflict Management
+                        </SelectItem>
+                        <SelectItem value="Community Engagement">
+                          Community Engagement
+                        </SelectItem>
+                        <SelectItem value="Logistics">Logistics</SelectItem>
+                        <SelectItem value="Interpersonal Skills">
+                          Interpersonal Skills
+                        </SelectItem>
+                        <SelectItem value="Volunteer Coordination">
+                          Volunteer Coordination
+                        </SelectItem>
+                        <SelectItem value="Stress Management">
+                          Stress Management
+                        </SelectItem>
+                        <SelectItem value="Critical Thinking">
+                          Critical Thinking
+                        </SelectItem>
+                        <SelectItem value="Data Analysis">
+                          Data Analysis
+                        </SelectItem>
+                        <SelectItem value="Marketing Skills">
+                          Marketing Skills
+                        </SelectItem>
+                        <SelectItem value="Fundraising">Fundraising</SelectItem>
+                        <SelectItem value="Innovation">Innovation</SelectItem>
+                        <SelectItem value="Team Leadership">
+                          Team Leadership
+                        </SelectItem>
+                        <SelectItem value="Social Media Management">
+                          Social Media Management
+                        </SelectItem>
+                        <SelectItem value="Event Coordination">
+                          Event Coordination
+                        </SelectItem>
+                        <SelectItem value="Decision-Making Under Pressure">
+                          Decision-Making Under Pressure
+                        </SelectItem>
+                        <SelectItem value="Conflict Resolution">
+                          Conflict Resolution
+                        </SelectItem>
+                        <SelectItem value="Volunteer Training">
+                          Volunteer Training
+                        </SelectItem>
+                        <SelectItem value="Problem Identification">
+                          Problem Identification
+                        </SelectItem>
+                        <SelectItem value="First Aid">First Aid</SelectItem>
+                        <SelectItem value="Team Management">
+                          Team Management
+                        </SelectItem>
+                        <SelectItem value="Crowd Management">
+                          Crowd Management
+                        </SelectItem>
+                        <SelectItem value="Sponsorship Management">
+                          Sponsorship Management
+                        </SelectItem>
+                        <SelectItem value="Vendor Management">
+                          Vendor Management
+                        </SelectItem>
+                        <SelectItem value="Financial Management">
+                          Financial Management
+                        </SelectItem>
+                        <SelectItem value="Safety Procedures">
+                          Safety Procedures
+                        </SelectItem>
+                        <SelectItem value="Volunteer Recognition">
+                          Volunteer Recognition
+                        </SelectItem>
+                        <SelectItem value="Problem Resolution">
+                          Problem Resolution
+                        </SelectItem>
+                        <SelectItem value="Documentation Skills">
+                          Documentation Skills
+                        </SelectItem>
+                        <SelectItem value="Empowerment">Empowerment</SelectItem>
+                        <SelectItem value="Team Motivation">
+                          Team Motivation
+                        </SelectItem>
+                        <SelectItem value="Event Evaluation">
+                          Event Evaluation
+                        </SelectItem>
+                        <SelectItem value="Volunteer Engagement">
+                          Volunteer Engagement
+                        </SelectItem>
+                        <SelectItem value="Digital Literacy">
+                          Digital Literacy
+                        </SelectItem>
+                        <SelectItem value="Project Coordination">
+                          Project Coordination
+                        </SelectItem>
+                        <SelectItem value="Event Logistics">
+                          Event Logistics
+                        </SelectItem>
+                        <SelectItem value="Volunteer Recruitment">
+                          Volunteer Recruitment
+                        </SelectItem>
+                        <SelectItem value="Community Outreach">
+                          Community Outreach
+                        </SelectItem>
+                        <SelectItem value="Resource Management">
+                          Resource Management
+                        </SelectItem>
+                        <SelectItem value="Marketing Strategy">
+                          Marketing Strategy
+                        </SelectItem>
+                        <SelectItem value="Community Building">
+                          Community Building
+                        </SelectItem>
+                        <SelectItem value="Event Security">
+                          Event Security
+                        </SelectItem>
+                        <SelectItem value="Leadership Development">
+                          Leadership Development
+                        </SelectItem>
+                        <SelectItem value="Volunteer Retention">
+                          Volunteer Retention
+                        </SelectItem>
+                        <SelectItem value="Problem Prevention">
+                          Problem Prevention
+                        </SelectItem>
+                        <SelectItem value="Crowdfunding">
+                          Crowdfunding
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -368,106 +616,30 @@ const EventForm = ({ type, userId }: Props) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <div className="flex-center h-[55px] w-full overflow-hidden rounded-full bg-gray-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/exp.svg"
-                      alt="calender"
-                      width={24}
-                      height={24}
-                    />
-                    <Input
-                      placeholder="Exprience (e.g. 5 years , 2 years , frasher)"
-                      {...field}
-                      className="input-field"
-                    />
-                  </div>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger className="select-field">
+                      <SelectValue placeholder="Expriences" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="Fresher">Fresher</SelectItem>
+                        <SelectItem value="6 - 12 Months">
+                          6 - 12 Months
+                        </SelectItem>
+                        <SelectItem value="2 - 5 years">2 - 5 years</SelectItem>
+                        <SelectItem value="10+ Years ">10+ Years</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-
-        <div className="flex flex-col gap-5 md:flex-row">
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/dollar.svg"
-                      alt="dollar"
-                      width={24}
-                      height={24}
-                      className="filter-grey"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Price"
-                      {...field}
-                      className="p-regular-16 border-0 bg-grey-50 outline-offset-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    />
-                    <FormField
-                      control={form.control}
-                      name="isFree"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="flex items-center">
-                              <label
-                                htmlFor="isFree"
-                                className="whitespace-nowrap pr-3 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                Free Ticket
-                              </label>
-                              <Checkbox
-                                onCheckedChange={field.onChange}
-                                checked={field.value}
-                                id="isFree"
-                                className="mr-2 h-5 w-5 border-2 border-primary-500"
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormControl>
-                  <div className="flex-center h-[54px] w-full overflow-hidden rounded-full bg-grey-50 px-4 py-2">
-                    <Image
-                      src="/assets/icons/link.svg"
-                      alt="link"
-                      width={24}
-                      height={24}
-                    />
-
-                    <Input
-                      placeholder="URL"
-                      {...field}
-                      className="input-field"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />*/}
-        </div>
-
-        {/* ////////////////// */}
 
         <Button
           type="submit"

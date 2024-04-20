@@ -1,36 +1,26 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
-import {
-  CreateEventParams,
-  UpdateEventParams,
-  DeleteEventParams,
-  GetAllEventsParams,
-  GetEventsByUserParams,
-  GetRelatedEventsByCategoryParams,
-} from "@/types";
-import Category from "@/database/category.model";
 import { connectToDatabase } from "../mongoose";
 import User from "@/database/user.model";
 import Event from "@/database/event.model";
 
-const getCategoryByName = async (name: string) => {
-  return Category.findOne({ name: { $regex: name, $options: "i" } });
-};
+// const getCategoryByName = async (name: string) => {
+//   return Category.findOne({ name: { $regex: name, $options: "i" } });
+// };
 
-const populateEvent = (query: any) => {
-  return query
-    .populate({
-      path: "organizer",
-      model: User,
-      select: "_id firstName lastName",
-    })
-    .populate({ path: "category", model: Category, select: "_id name" });
-};
+// const populateEvent = (query: any) => {
+//   return query
+//     .populate({
+//       path: "organizer",
+//       model: User,
+//       select: "_id firstName lastName",
+//     })
+//     .populate({ path: "category", model: Category, select: "_id name" });
+// };
 
 // CREATE
-export async function createEvent({ userId, event, path }: CreateEventParams) {
+export async function createEvent({ userId, event, path }: any) {
   try {
     await connectToDatabase();
 
@@ -39,7 +29,6 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
 
     const newEvent = await Event.create({
       ...event,
-      category: event.categoryId,
       organizer: userId,
     });
     revalidatePath(path);
