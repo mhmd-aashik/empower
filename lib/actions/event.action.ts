@@ -1,39 +1,82 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { connectToDatabase } from "../mongoose";
+
+import { CreateUserParams, UpdateUserParams } from "@/types";
 import User from "@/database/user.model";
+import { connectToDatabase } from "../mongoose";
 import Event from "@/database/event.model";
 
-// const getCategoryByName = async (name: string) => {
-//   return Category.findOne({ name: { $regex: name, $options: "i" } });
-// };
-
-// const populateEvent = (query: any) => {
-//   return query
-//     .populate({
-//       path: "organizer",
-//       model: User,
-//       select: "_id firstName lastName",
-//     })
-//     .populate({ path: "category", model: Category, select: "_id name" });
-// };
-
-// CREATE
-export async function createEvent({ userId, event, path }: any) {
+export async function createUser(user: CreateUserParams) {
   try {
     await connectToDatabase();
 
-    const organizer = await User.findById(userId);
-    if (!organizer) throw new Error("Organizer not found");
+    const newUser = await User.create(user);
+    return JSON.parse(JSON.stringify(newUser));
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-    const newEvent = await Event.create({
-      ...event,
-      organizer: userId,
+export async function getUserById(userId: string) {
+  try {
+    await connectToDatabase();
+
+    const user = await User.findById(userId);
+
+    if (!user) throw new Error("User not found");
+    return JSON.parse(JSON.stringify(user));
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function updateUser(clerkId: string, user: UpdateUserParams) {
+  try {
+    await connectToDatabase();
+
+    const updatedUser = await User.findOneAndUpdate({ clerkId }, user, {
+      new: true,
     });
-    revalidatePath(path);
 
-    return JSON.parse(JSON.stringify(newEvent));
+    if (!updatedUser) throw new Error("User update failed");
+    return JSON.parse(JSON.stringify(updatedUser));
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteUser(clerkId: string) {
+  try {
+    await connectToDatabase();
+
+    // Find user to delete
+    const userToDelete = await User.findOne({ clerkId });
+
+    if (!userToDelete) {
+      throw new Error("User not found");
+    }
+
+    // Unlink relationships
+    await Promise.all([
+      // Update the 'events' collection to remove references to the user
+      Event.updateMany(
+        { _id: { $in: userToDelete.events } },
+        { $pull: { organizer: userToDelete._id } }
+      ),
+
+      // Update the 'orders' collection to remove references to the user
+      // Order.updateMany(
+      //   { _id: { $in: userToDelete.orders } },
+      //   { $unset: { buyer: 1 } }
+      // ),
+    ]);
+
+    // Delete user
+    const deletedUser = await User.findByIdAndDelete(userToDelete._id);
+    revalidatePath("/");
+
+    return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
   } catch (error) {
     console.log(error);
   }
