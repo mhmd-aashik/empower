@@ -25,7 +25,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation";
 // import { createEvent } from "@/lib/actions/events.action";
 
-import CategoryMenu from "./CategoryMenu";
+// import CategoryMenu from "./CategoryMenu";
 import {
   Select,
   SelectContent,
@@ -39,6 +39,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { FileUploader } from "./FileUploader";
 import { Checkbox } from "../ui/checkbox";
 import { createEvent } from "@/lib/actions/event.action";
+import Dropdown from "./Dropdown";
 
 interface Props {
   userId: string;
@@ -113,7 +114,11 @@ const EventForm = ({ type, userId }: Props) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                  <CategoryMenu
+                  {/* <CategoryMenu
+                    onChangeHandler={field.onChange}
+                    value={field.value}
+                  /> */}
+                  <Dropdown
                     onChangeHandler={field.onChange}
                     value={field.value}
                   />
