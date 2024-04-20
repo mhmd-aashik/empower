@@ -16,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { formSchema } from "@/lib/validator";
 import { eventDefaultValues } from "@/constants";
-import { Textarea } from "../ui/textarea";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -36,7 +35,6 @@ import {
 import { useUploadThing } from "@/lib/uploadthing";
 import { FileUploader } from "./FileUploader";
 import { createEvent } from "@/lib/actions/event.action";
-import { type } from "os";
 
 interface Props {
   userId: string;
@@ -74,6 +72,9 @@ const EventForm = ({ type, userId }: Props) => {
             ...values,
             description: editorRef.current?.getContent(),
             imageUrl: uploadedImageUrl,
+            categoryId: "",
+            price: "",
+            isFree: false,
           },
           userId,
           path: "/profile",

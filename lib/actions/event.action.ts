@@ -1,83 +1,30 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
-import { CreateUserParams, UpdateUserParams } from "@/types";
-import User from "@/database/user.model";
+import { CreateEventParams } from "@/types";
 import { connectToDatabase } from "../mongoose";
 import Event from "@/database/event.model";
+import User from "@/database/user.model";
 
-export async function createUser(user: CreateUserParams) {
+export const createEvent = async ({
+  event,
+  userId,
+  path,
+}: CreateEventParams) => {
   try {
     await connectToDatabase();
 
-    const newUser = await User.create(user);
-    return JSON.parse(JSON.stringify(newUser));
-  } catch (error) {
-    console.log(error);
-  }
-}
+    const organizer = await User.findById(userId);
 
-export async function getUserById(userId: string) {
-  try {
-    await connectToDatabase();
+    if (!organizer) throw new Error("Organizer not found");
 
-    const user = await User.findById(userId);
-
-    if (!user) throw new Error("User not found");
-    return JSON.parse(JSON.stringify(user));
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-export async function updateUser(clerkId: string, user: UpdateUserParams) {
-  try {
-    await connectToDatabase();
-
-    const updatedUser = await User.findOneAndUpdate({ clerkId }, user, {
-      new: true,
+    const newEvent = await Event.create({
+      ...event,
+      category: event.categoryId,
+      organizer: userId,
     });
 
-    if (!updatedUser) throw new Error("User update failed");
-    return JSON.parse(JSON.stringify(updatedUser));
+    return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
     console.log(error);
   }
-}
-
-export async function deleteUser(clerkId: string) {
-  try {
-    await connectToDatabase();
-
-    // Find user to delete
-    const userToDelete = await User.findOne({ clerkId });
-
-    if (!userToDelete) {
-      throw new Error("User not found");
-    }
-
-    // Unlink relationships
-    await Promise.all([
-      // Update the 'events' collection to remove references to the user
-      Event.updateMany(
-        { _id: { $in: userToDelete.events } },
-        { $pull: { organizer: userToDelete._id } }
-      ),
-
-      // Update the 'orders' collection to remove references to the user
-      // Order.updateMany(
-      //   { _id: { $in: userToDelete.orders } },
-      //   { $unset: { buyer: 1 } }
-      // ),
-    ]);
-
-    // Delete user
-    const deletedUser = await User.findByIdAndDelete(userToDelete._id);
-    revalidatePath("/");
-
-    return deletedUser ? JSON.parse(JSON.stringify(deletedUser)) : null;
-  } catch (error) {
-    console.log(error);
-  }
-}
+};
