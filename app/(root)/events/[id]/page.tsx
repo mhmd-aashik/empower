@@ -1,9 +1,9 @@
-import React from "react";
+import React from 'react'
 
-const page = ({ params }: { params: { id: string } }) => {
-//   return <div>
-//     <Image src={}
-//   </div>;
-};
+const page = () => {
+  return (
+    <div>page</div>
+  )
+}
 
-export default page;
+export default page
